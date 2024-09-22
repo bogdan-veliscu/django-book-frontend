@@ -1,43 +1,23 @@
-// app/page.tsx
-"use client";  // Mark this component as a Client Component
+import Container from "@/app/components/container";
 
-import Image from "next/image";
-import { useEffect, useState } from 'react';
-import { fetchArticles } from '../api/apiClient';
+import { MoreArticles } from "./components/more-articles";
 
-interface Article {
-  id: number;
-  title: string;
-  description: string;
+import { getArticles } from "@/services/article-service";
+import HeroArticle from "./components/hero-article";
+
+
+export default async function Index() {
+
+    const allArticles = await getArticles();
+    const heroArticle = allArticles[0];
+    // const moreArticles = allArticles.slice(1);
+
+    return (
+        <main>
+            <Container>
+                <HeroArticle article={heroArticle} />
+                <MoreArticles articles={allArticles} />
+            </Container>
+        </main>
+    );
 }
-
-const HomePage = () => {
-  const [articles, setArticles] = useState<Article[]>([]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const data = await fetchArticles();
-      setArticles(data);
-    };
-
-    fetchData();
-  }, []);
-
-  return (
-    <div>
-      <h1>Articles</h1>
-      {articles.length > 0 ? (
-        articles.map(article => (
-          <div key={article.id}>
-            <h2>{article.title}</h2>
-            <p>{article.description}</p>
-          </div>
-        ))
-      ) : (
-        <p>No articles found</p>
-      )}
-    </div>
-  );
-};
-
-export default HomePage;
