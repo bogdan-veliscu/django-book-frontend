@@ -4,8 +4,7 @@ import markdownToHtml from "@/lib/markdownToHtml";
 import Container from "@/components/container";
 import { ArticleBody } from "@/components/article-body";
 import { ArticleHeader } from "@/components/article-header";
-import { fetchArticle } from "@/services/articleService";
-import { fetchArticles } from "@/api/apiClient";
+import { fetchArticle, fetchArticles } from "@/services/articleService";
 import Header from "@/components/header";
 import { type Article } from "@/interfaces/article";
 
