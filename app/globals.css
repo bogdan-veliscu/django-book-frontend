@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@import "@shadcn/ui/styles";
 
 :root {
   --background: #ffffff;
