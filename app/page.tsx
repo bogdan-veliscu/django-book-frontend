@@ -1,42 +1,32 @@
-"use client";  // Mark this component as a Client Component
-
-import Image from "next/image";
-import { useEffect, useState } from 'react';
+import Container from "@/components/container";
+import { HeroArticle } from "@/components/hero-article";
+// import { Intro } from "@/components/intro";
+import { MoreArticles } from "@/components/more-articles";
 import { fetchArticles } from "./api/apiClient";
 
-interface Article {
-  id: number;
-  title: string;
-  description: string;
-}
+export default async function Index() {
+  const articles = await fetchArticles();
 
-const HomePage = () => {
-  const [articles, setArticles] = useState<Article[]>([]);
+  const article = articles[0];
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const data = await fetchArticles();
-      setArticles(data);
-    };
+  const moreArticles = articles.slice(1);
 
-    fetchData();
-  }, []);
+  console.log("$$$ -> ", articles.length, typeof articles[0]);
 
   return (
-    <div>
-      <h1>Articles</h1>
-      {articles.length > 0 ? (
-        articles.map(article => (
-          <div key={article.id}>
-            <h2>{article.title}</h2>
-            <p>{article.description}</p>
-          </div>
-        ))
-      ) : (
-        <p>No articles found</p>
-      )}
-    </div>
+    <main>
+      <Container>
+        {/* <Intro /> */}
+        <HeroArticle
+          title={article.title}
+          image={article.image}
+          date={article.createdAt}
+          author={article.author}
+          slug={article.slug}
+          description={article.description}
+        />
+        {moreArticles.length > 0 && <MoreArticles articles={moreArticles} />}
+      </Container>
+    </main>
   );
-};
-
-export default HomePage;
+}
