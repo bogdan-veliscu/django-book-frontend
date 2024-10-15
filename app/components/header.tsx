@@ -1,13 +1,13 @@
-import Link from "next/link";
-
+import { MainNav } from "./main-nav"
+import UserButton from "./user-button"
 const Header = () => {
     return (
-        <h2 className="text-2xl md:text-4xl font-bold tracking-tight md:tracking-tighter leading-tight mb-20 mt-8 flex items-center">
-            <Link href="/" className="hover:underline">
-                Conduit
-            </Link>
-            .
-        </h2>
+        <header className="sticky flex justify-center border-b">
+            <div className="mx-auto flex h-16 w-full max-w-3xl items-center justify-between px-4 sm:px-6">
+                <MainNav />
+                <UserButton />
+            </div>
+        </header>
     );
 };
 

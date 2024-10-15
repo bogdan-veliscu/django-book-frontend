@@ -21,7 +21,6 @@ export default async function Post({ params }: Params) {
     return (
         <main>
             <Container>
-                <Header />
                 <article className="mb-32">
                     <ArticleHeader
                         title={articleObj.title}
