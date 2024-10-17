@@ -4,6 +4,7 @@ import "next-auth/jwt"
 import type { NextAuthConfig } from "next-auth"
 import CredentialsProvider from 'next-auth/providers/credentials';
 import axios from "axios"
+import useProfileStore from "./store/profileStore";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 const config = {
@@ -24,9 +25,10 @@ const config = {
                 password: credentials?.password,
             }
           });
-          const user = response.data;
+          const user = response.data["user"];
+          console.log("authorize user2 :", user )
           if (user) {
-            return { ...user.user, username: user?.name };
+            return { ...user, name: user?.name, accessToken: user?.token };
           } else {
             return null;
           }
@@ -40,15 +42,13 @@ const config = {
   basePath: "/auth",
   session: { strategy: "jwt" },
   callbacks: {
-    jwt({ token, trigger, session }) {
+    jwt({ token, trigger, session, user }) {
+      if (user) token.accessToken = user.accessToken
       if (trigger === "update") token.name = session.user.name
       return token
     },
     async session({ session, token }) {
-      if (token?.accessToken) {
-        session.accessToken = token.accessToken
-      }
-      return session
+      return {...session, accessToken: token.accessToken}
     },
   },
   debug: process.env.NODE_ENV !== "production" ? true : false,

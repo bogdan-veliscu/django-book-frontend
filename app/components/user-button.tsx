@@ -9,6 +9,8 @@ import {
     DropdownMenuTrigger,
 } from "./ui/dropdown-menu"
 import { SignIn, SignOut } from "./auth-component"
+import { NavigationMenuLink } from "@radix-ui/react-navigation-menu"
+import CustomLink from "./custom-link"
 
 export default async function UserButton() {
     const session = await auth()
@@ -16,7 +18,13 @@ export default async function UserButton() {
     return (
         <div className="flex items-center gap-2">
             <span className="hidden text-sm sm:inline-flex">
-                {session.user.email}
+                <CustomLink href="/profile">
+                    <Button variant="ghost" className="p-0">
+                        {session.user.email}
+
+                    </Button>
+
+                </CustomLink>
             </span>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -48,6 +56,6 @@ export default async function UserButton() {
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
-        </div>
+        </div >
     )
 }

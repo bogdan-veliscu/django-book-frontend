@@ -39,6 +39,16 @@ export function MainNav() {
                         >
                             Conduit
                         </NavigationMenuLink>
+
+
+                    </NavigationMenuItem>
+                    <NavigationMenuItem>
+                        <NavigationMenuLink
+                            href="posts/create"
+                            className={navigationMenuTriggerStyle()}
+                        >
+                            Create
+                        </NavigationMenuLink>
                     </NavigationMenuItem>
                 </NavigationMenuList>
             </NavigationMenu>
