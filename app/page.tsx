@@ -9,13 +9,13 @@ import { useArticles } from "./hooks/useArticles";
 export default function Index() {
   const { articles, loading, error } = useArticles();
 
-  const article = articles[0];
-
-  const moreArticles = articles.slice(1);
-
   if (loading) return <p>Loading articles...</p>;
   if (error) return <p>{error}</p>;
+  if (!articles) return null;
+  const article = articles[0];
 
+  console.log("article", article);
+  const moreArticles = articles.slice(1);
   return (
     <main>
       <Container>

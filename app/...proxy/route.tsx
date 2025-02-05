@@ -29,6 +29,10 @@ async function handler(request: NextRequest) {
     return stripContentEncoding(result)
 }
 
-export const dynamic = "force-dynamic"
-
 export { handler as GET, handler as POST }
+
+export async function generateStaticParams() {
+    // Returning an empty array prevents any static pages from being generated for this route.
+    // Note: This effectively means the "/auth" pages will never be generated statically.
+    return [];
+}

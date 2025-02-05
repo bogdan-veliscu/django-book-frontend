@@ -1,5 +1,6 @@
 import { signIn } from "next-auth/react"
-import { Button, Typography } from "shadcn-ui"
+import { Button } from "@/components/ui/button"
+import { Typography } from "@/components/ui/typography/typography"
 
 export default function AccessDenied() {
     return (

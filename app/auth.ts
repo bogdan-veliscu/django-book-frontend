@@ -43,13 +43,18 @@ const config = {
   session: { strategy: "jwt" },
   callbacks: {
     jwt({ token, trigger, session, user }) {
-      if (user) token.accessToken = user.accessToken
-      if (trigger === "update") token.name = session.user.name
-      return token
+      if (user) {
+        token.accessToken = (user as any).accessToken;
+      }
+      if (trigger === "update") token.name = session.user.name;
+      return token;
     },
-    async session({ session, token }) {
-      return {...session, accessToken: token.accessToken}
-    },
+    session({ session, token }) {
+      if (token?.accessToken) {
+        session.accessToken = token.accessToken as string;
+      }
+      return session;
+    }
   },
   debug: process.env.NODE_ENV !== "production" ? true : false,
 } satisfies NextAuthConfig
