@@ -4,16 +4,10 @@ on:
   workflow_dispatch: # Allow manual triggering
   push:
     branches: [main]
-    paths:
-      - "frontend/**"
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
