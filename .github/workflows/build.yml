@@ -1,24 +1,26 @@
-name: Frontend CI/CD
+name: Frontend CI
 
 on:
   push:
     branches: [main]
     paths:
-      - "**/*.ts*"
-      - "**/*.js*"
-      - "Dockerfile"
-      - ".github/workflows/*.yml"
+      - "frontend/**"
 
 jobs:
-  build-test:
+  test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 20
+          node-version: "20"
           cache: "yarn"
 
       - name: Install dependencies
@@ -27,13 +29,8 @@ jobs:
       - name: Run tests
         run: yarn test --ci --watchAll=false
 
-      - name: Build with test environment
-        run: |
-          cp .env.test .env.production
-          yarn build
-
   docker-publish:
-    needs: [build-test]
+    needs: [test]
     runs-on: ubuntu-latest
     permissions:
       packages: write
