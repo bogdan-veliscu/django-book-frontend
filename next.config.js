@@ -3,6 +3,7 @@ const nextConfig = {
   output: "standalone",
   images: {
     unoptimized: true,
+    domains: ["api.dicebear.com"],
   },
   trailingSlash: true,
   eslint: {
@@ -17,13 +18,14 @@ const nextConfig = {
   },
   auth: {
     trustHost: true,
+    url: process.env.NEXTAUTH_URL || "https://brandfocus.ai",
   },
   async rewrites() {
     return [
       {
         source: "/api/:path*",
         destination: `${
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"
+          process.env.NEXT_PUBLIC_API_URL || "http://app:8000/api"
         }/:path*`,
       },
     ];

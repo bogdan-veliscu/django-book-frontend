@@ -22,9 +22,6 @@ FROM node:20-alpine AS runner
 
 WORKDIR /app
 
-# Install curl for health checks
-RUN apk add --no-cache curl
-
 # Copy necessary files from builder
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
