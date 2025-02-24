@@ -3,7 +3,7 @@ const nextConfig = {
   output: "standalone",
   images: {
     unoptimized: true,
-    domains: ["api.dicebear.com"],
+    domains: ["api.dicebear.com", process.env.DOMAIN],
   },
   trailingSlash: true,
   eslint: {
@@ -34,6 +34,27 @@ const nextConfig = {
     outputFileTracingExcludes: {
       "*": ["node_modules/**/@auth/core/**"],
     },
+  },
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          {
+            key: "Access-Control-Allow-Origin",
+            value: `https://${process.env.DOMAIN}`,
+          },
+          {
+            key: "Access-Control-Allow-Credentials",
+            value: "true",
+          },
+          {
+            key: "Access-Control-Allow-Methods",
+            value: "GET,OPTIONS,PATCH,DELETE,POST,PUT",
+          },
+        ],
+      },
+    ];
   },
 };
 
