@@ -5,7 +5,7 @@ import type { NextAuthConfig } from "next-auth"
 import CredentialsProvider from 'next-auth/providers/credentials';
 import axios from "axios"
 import useProfileStore from "./store/profileStore";
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
 const config = {
   theme: { logo: "/logo.png" },
@@ -57,6 +57,7 @@ const config = {
     }
   },
   debug: process.env.NODE_ENV !== "production" ? true : false,
+  trustHost: true,
 } satisfies NextAuthConfig
 
 export const { handlers, auth, signIn, signOut } = NextAuth(config)
