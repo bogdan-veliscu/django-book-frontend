@@ -32,6 +32,9 @@ import axios from 'axios';
 import apiClient from './apiClient';
 import { auth } from "@/auth";
 
+// Check if we're in a Node.js environment during build
+const isBuildTime = process.env.NODE_ENV === 'production' && typeof window === 'undefined';
+
 // Simple markdown conversion function
 const htmlToMarkdown = (html: string): string => {
   // This is a very basic implementation
@@ -48,7 +51,34 @@ const htmlToMarkdown = (html: string): string => {
     .replace(/<[^>]*>/g, '');
 };
 
+// Mock article for build time
+const getMockArticle = (slug?: string): Article => {
+  return {
+    slug: slug || "mock-article",
+    title: "Mock Article",
+    description: "This is a mock article for build time",
+    body: "Mock article content",
+    tagList: ["mock", "build"],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    favorited: false,
+    favoritesCount: 0,
+    author: {
+      username: "mockuser",
+      bio: "Mock user bio",
+      image: "",
+      following: false
+    }
+  };
+};
+
 export const fetchArticles = async (): Promise<Article[]> => {
+  // Return mock data during build time
+  if (isBuildTime) {
+    console.log('[BUILD TIME] Returning mock articles');
+    return [getMockArticle()];
+  }
+
   try {
     const response = await apiClient.get('/articles');
     console.log('Articles response:', response.data);
@@ -69,6 +99,12 @@ export const fetchArticles = async (): Promise<Article[]> => {
 };
 
 export const fetchArticle = async (slug: string): Promise<Article | null> => {
+  // Return mock data during build time
+  if (isBuildTime) {
+    console.log(`[BUILD TIME] Returning mock article for slug: ${slug}`);
+    return getMockArticle(slug);
+  }
+
   try {
     const response = await apiClient.get(`/articles/${slug}`);
     console.log('Article response:', response.data);

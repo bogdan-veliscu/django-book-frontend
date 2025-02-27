@@ -3,7 +3,7 @@ const nextConfig = {
   output: "standalone",
   images: {
     unoptimized: true,
-    domains: ["api.dicebear.com", process.env.DOMAIN],
+    domains: ["api.dicebear.com", "brandfocus.ai", "localhost"],
   },
   trailingSlash: true,
   eslint: {
@@ -15,10 +15,6 @@ const nextConfig = {
   logging: {
     level: "error",
     quiet: true,
-  },
-  auth: {
-    trustHost: true,
-    url: process.env.NEXTAUTH_URL || "https://brandfocus.ai",
   },
   async rewrites() {
     return [
@@ -42,7 +38,7 @@ const nextConfig = {
         headers: [
           {
             key: "Access-Control-Allow-Origin",
-            value: `https://${process.env.DOMAIN}`,
+            value: "*",
           },
           {
             key: "Access-Control-Allow-Credentials",

@@ -1,8 +1,6 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { loginUser } from "./app/services/userService";
-import { JWT } from "next-auth/jwt";
-import { Session } from "next-auth";
 
 // Define User interface locally
 interface User {
@@ -16,15 +14,26 @@ interface User {
 // Extend the built-in types
 declare module "next-auth" {
   interface Session {
-    user: User & {
+    user: {
       name?: string | null;
+      email?: string;
       image?: string | null;
+      token?: string;
+      username?: string;
+      bio?: string;
     };
+    accessToken?: string;
   }
 }
 
 declare module "next-auth/jwt" {
-  interface JWT extends User {}
+  interface JWT {
+    email?: string;
+    token?: string;
+    username?: string;
+    bio?: string;
+    image?: string;
+  }
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -39,26 +48,35 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // Initial sign in
       if (user) {
         console.log("JWT callback with user:", user);
-        return {
-          ...token,
-          ...(user as User),
-        };
+        // Cast user to any to avoid type errors
+        const userData = user as any;
+        
+        // Update token with user data
+        token.email = userData.email || token.email;
+        token.token = userData.token || token.token;
+        token.username = userData.username || token.username;
+        token.bio = userData.bio || token.bio || "";
+        token.image = userData.image || token.image;
       }
       return token;
     },
     async session({ session, token }) {
       console.log("Session callback with token:", token);
+      
       // Send properties to the client
       if (token) {
+        // Update session with token data
         session.user = {
           ...session.user,
-          email: token.email || "",
-          token: token.token || "",
-          username: token.username || "",
-          bio: token.bio || "",
-          // Convert any non-string image value to null
-          image: typeof token.image === 'string' ? token.image : null,
+          email: token.email,
+          token: token.token,
+          username: token.username,
+          bio: token.bio,
+          image: token.image,
         };
+        
+        // Also set accessToken for easier access
+        session.accessToken = token.token;
       }
       return session;
     },
@@ -84,7 +102,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           });
 
           console.log("User authorized:", user);
-          return user as any;
+          return user;
         } catch (error) {
           console.error("Authorization error:", error);
           return null;
