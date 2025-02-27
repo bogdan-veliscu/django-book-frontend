@@ -16,9 +16,6 @@ const nextConfig = {
     level: "error",
     quiet: true,
   },
-  // Empty auth config to prevent conflicts with external auth.ts
-  // This addresses the "Unrecognized key(s) in object: 'auth'" error
-  auth: null,
   async rewrites() {
     return [
       {

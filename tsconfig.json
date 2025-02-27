@@ -22,7 +22,7 @@
       "@/components/*": ["./app/components/*"],
       "@/lib/*": ["./lib/*"],
       "@/services/*": ["./app/services/*"],
-      "@/store/*": ["./store/*"],
+      "@/store/*": ["./app/store/*"],
       "@/auth": ["./app/auth.ts"]
     }
   },
