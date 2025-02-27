@@ -3,16 +3,35 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Set network reliability configurations
+ENV YARN_NETWORK_TIMEOUT=300000
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+
+# Set DNS configuration to improve network reliability
+RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf && \
+    echo "nameserver 8.8.4.4" >> /etc/resolv.conf
+
 # Copy package files and install dependencies
 COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
+
+# Modified install command with retries and network optimization
+RUN apk add --no-cache git && \
+    yarn config set network-timeout 300000 && \
+    yarn config set registry https://registry.npmjs.org/ && \
+    yarn install --frozen-lockfile --network-timeout 600000 || \
+    (sleep 5 && yarn install --frozen-lockfile --network-timeout 600000) || \
+    (sleep 10 && yarn install --frozen-lockfile --network-timeout 600000)
 
 # Copy remaining source code
 COPY . .
 
 # Set build args and environment variables
 ARG NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+ARG NEXTAUTH_URL
+ARG NEXTAUTH_SECRET
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:3000/api}
+ENV NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3000}
+ENV NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-development_secret_key}
 
 # Build the application
 RUN yarn build
@@ -29,9 +48,12 @@ COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/node_modules ./node_modules
 
 # Environment variables for runtime
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-ENV NEXTAUTH_URL=$NEXTAUTH_URL
-ENV NEXTAUTH_SECRET=$NEXTAUTH_SECRET
+ARG NEXT_PUBLIC_API_URL
+ARG NEXTAUTH_URL
+ARG NEXTAUTH_SECRET
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:3000/api}
+ENV NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3000}
+ENV NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-development_secret_key}
 
 # Set production environment
 ENV NODE_ENV=production
