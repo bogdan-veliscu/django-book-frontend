@@ -7,9 +7,6 @@ WORKDIR /app
 ENV YARN_NETWORK_TIMEOUT=300000
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-# Set DNS configuration to improve network reliability
-RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf && \
-    echo "nameserver 8.8.4.4" >> /etc/resolv.conf
 
 # Copy package files and install dependencies
 COPY package.json yarn.lock ./
