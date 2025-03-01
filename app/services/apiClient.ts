@@ -56,6 +56,10 @@ const mockArticleData = {
   }
 };
 
+// Keep track of session fetch attempts to prevent infinite loops
+let sessionFetchAttempts = 0;
+const MAX_SESSION_FETCH_ATTEMPTS = 3;
+
 apiClient.interceptors.request.use(
   async (config) => {
     try {
@@ -65,21 +69,34 @@ apiClient.interceptors.request.use(
       // The response interceptor will handle mocking the response
       if (isBuildTime) {
         console.log("Build time detected, will mock response in response interceptor");
+        return config;
       }
       
+      // Skip session fetch for auth-related endpoints to prevent loops
+      if (config.url?.includes('/auth/') || sessionFetchAttempts >= MAX_SESSION_FETCH_ATTEMPTS) {
+        console.log("Skipping session fetch for auth endpoint or max attempts reached");
+        sessionFetchAttempts = 0;
+        return config;
+      }
+      
+      sessionFetchAttempts++;
       const session = await getSession();
+      sessionFetchAttempts = 0;
+      
       if (session?.accessToken) {
         config.headers.Authorization = `Token ${session.accessToken}`;
         console.log("Request includes auth token");
       }
     } catch (error) {
       console.error("Error getting session:", error);
+      sessionFetchAttempts = 0;
     }
     
     return config;
   },
   (error) => {
     console.error("Request interceptor error:", error);
+    sessionFetchAttempts = 0;
     return Promise.reject(error);
   }
 );

@@ -43,6 +43,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     signOut: "/",
     error: "/login",
   },
+  cookies: {
+    sessionToken: {
+      name: `next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
+  },
   callbacks: {
     async jwt({ token, user }) {
       // Initial sign in
@@ -68,17 +79,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         // Update session with token data
         session.user = {
           ...session.user,
-          email: token.email,
-          token: token.token,
-          username: token.username,
-          bio: token.bio,
-          image: token.image,
+          email: token.email || "",
+          token: token.token as string || "",
+          username: token.username as string || "",
+          bio: token.bio as string || "",
+          image: token.image as string || null,
         };
         
         // Also set accessToken for easier access
-        session.accessToken = token.token;
+        session.accessToken = token.token as string;
       }
       return session;
+    },
+    async redirect({ url, baseUrl }) {
+      // Allows relative callback URLs
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      // Allows callback URLs on the same origin
+      else if (new URL(url).origin === baseUrl) return url;
+      return baseUrl;
     },
   },
   providers: [
@@ -112,5 +130,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
 }); 
