@@ -12,41 +12,47 @@ export async function middleware(request: NextRequest) {
                        path.startsWith('/api/health') ||
                        path.startsWith('/_next') || 
                        path.startsWith('/favicon.ico') ||
-                       path.startsWith('/health')
+                       path.startsWith('/health') ||
+                       path === '/'
   
-  // If it's a public path, allow access
+  // If it's a public path, allow access without checking auth
   if (isPublicPath) {
     return NextResponse.next()
   }
   
   // For API routes, we need to check if they're auth-related
-  if (path.startsWith('/api') && !path.startsWith('/api/auth')) {
-    // For non-auth API routes, we'll let the backend handle authentication
+  if (path.startsWith('/api')) {
+    // For API routes, we'll let the backend handle authentication
     return NextResponse.next()
   }
   
-  // For protected routes, check for a session token
-  const token = await getToken({ 
-    req: request,
-    secret: process.env.NEXTAUTH_SECRET
-  })
-  
-  // If no token and trying to access a protected route, redirect to login
-  if (!token && !isPublicPath) {
-    const url = new URL('/login', request.url)
-    url.searchParams.set('callbackUrl', encodeURI(request.url))
-    return NextResponse.redirect(url)
+  try {
+    // For protected routes, check for a session token
+    const token = await getToken({ 
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET
+    })
+    
+    // If no token and trying to access a protected route, redirect to login
+    if (!token) {
+      const loginUrl = new URL('/login', request.url)
+      // Don't add callback URL to prevent potential redirect loops
+      return NextResponse.redirect(loginUrl)
+    }
+    
+    // Otherwise, allow access
+    return NextResponse.next()
+  } catch (error) {
+    console.error('Middleware error:', error)
+    // In case of error, allow the request to proceed
+    // This prevents blocking users due to auth errors
+    return NextResponse.next()
   }
-  
-  // Otherwise, allow access
-  return NextResponse.next()
 }
 
 // Configure which paths should be protected by the middleware
 export const config = {
   matcher: [
-    // Match all API routes except auth and health endpoints
-    '/api/((?!auth|health).*)',
     // Match all pages except public ones
     '/((?!api|_next/static|_next/image|favicon.ico|health|login|register).*)',
   ],

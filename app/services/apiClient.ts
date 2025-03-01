@@ -34,7 +34,9 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-  }
+  },
+  // Add a timeout to prevent hanging requests
+  timeout: 10000,
 });
 
 // Mock response data for build time
@@ -56,9 +58,23 @@ const mockArticleData = {
   }
 };
 
+// Create a separate instance for auth requests to avoid circular dependencies
+const authClient = axios.create({
+  baseURL: API_URL,
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  },
+  timeout: 10000,
+});
+
 // Keep track of session fetch attempts to prevent infinite loops
 let sessionFetchAttempts = 0;
 const MAX_SESSION_FETCH_ATTEMPTS = 3;
+
+// Flag to track if we're currently fetching a session
+let isFetchingSession = false;
 
 apiClient.interceptors.request.use(
   async (config) => {
@@ -66,30 +82,38 @@ apiClient.interceptors.request.use(
       console.log(`Making ${config.method?.toUpperCase()} request to: ${config.baseURL}${config.url}`);
       
       // If we're in build time, log but continue with the request
-      // The response interceptor will handle mocking the response
       if (isBuildTime) {
         console.log("Build time detected, will mock response in response interceptor");
         return config;
       }
       
       // Skip session fetch for auth-related endpoints to prevent loops
-      if (config.url?.includes('/auth/') || sessionFetchAttempts >= MAX_SESSION_FETCH_ATTEMPTS) {
+      if (config.url?.includes('/auth/') || 
+          isFetchingSession || 
+          sessionFetchAttempts >= MAX_SESSION_FETCH_ATTEMPTS) {
         console.log("Skipping session fetch for auth endpoint or max attempts reached");
-        sessionFetchAttempts = 0;
         return config;
       }
       
       sessionFetchAttempts++;
-      const session = await getSession();
-      sessionFetchAttempts = 0;
+      isFetchingSession = true;
       
-      if (session?.accessToken) {
-        config.headers.Authorization = `Token ${session.accessToken}`;
-        console.log("Request includes auth token");
+      try {
+        const session = await getSession();
+        if (session?.accessToken) {
+          config.headers.Authorization = `Token ${session.accessToken}`;
+          console.log("Request includes auth token");
+        }
+      } catch (sessionError) {
+        console.error("Error getting session:", sessionError);
+      } finally {
+        isFetchingSession = false;
+        sessionFetchAttempts = 0;
       }
     } catch (error) {
-      console.error("Error getting session:", error);
+      console.error("Request interceptor error:", error);
       sessionFetchAttempts = 0;
+      isFetchingSession = false;
     }
     
     return config;
@@ -97,6 +121,7 @@ apiClient.interceptors.request.use(
   (error) => {
     console.error("Request interceptor error:", error);
     sessionFetchAttempts = 0;
+    isFetchingSession = false;
     return Promise.reject(error);
   }
 );
@@ -145,3 +170,4 @@ apiClient.interceptors.response.use(
 );
 
 export default apiClient;
+export { authClient };

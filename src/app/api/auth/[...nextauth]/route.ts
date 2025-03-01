@@ -1,6 +1,6 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import axios from "axios";
+import { authClient } from "../../../../../app/services/apiClient";
 
 // Define the API URL based on environment
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://brandfocus.ai/api";
@@ -21,6 +21,27 @@ const handler = NextAuth({
         sameSite: "lax",
         path: "/",
         secure: process.env.NODE_ENV === "production",
+        domain: process.env.NODE_ENV === "production" ? ".brandfocus.ai" : undefined,
+      },
+    },
+    callbackUrl: {
+      name: `next-auth.callback-url`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+        domain: process.env.NODE_ENV === "production" ? ".brandfocus.ai" : undefined,
+      },
+    },
+    csrfToken: {
+      name: `next-auth.csrf-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+        domain: process.env.NODE_ENV === "production" ? ".brandfocus.ai" : undefined,
       },
     },
   },
@@ -85,13 +106,18 @@ const handler = NextAuth({
         try {
           console.log("Authorizing with credentials:", credentials.email);
           
-          // Make a direct API call to the backend
-          const response = await axios.post(`${API_URL}/users/login`, {
+          // Make a direct API call to the backend using authClient
+          const response = await authClient.post(`/users/login`, {
             user: {
               email: credentials.email,
               password: credentials.password,
             }
           });
+          
+          if (!response.data.user) {
+            console.error("Invalid response format:", response.data);
+            return null;
+          }
           
           const user = response.data.user;
           console.log("User authorized:", user);
@@ -107,10 +133,12 @@ const handler = NextAuth({
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
+  // Disable the edge runtime for now to ensure compatibility
+  // We can re-enable it later after confirming everything works
 });
 
 // Export the handler as GET and POST methods
 export { handler as GET, handler as POST };
 
-// Enable edge runtime for better performance
-export const runtime = "edge"; 
+// Disable edge runtime until we confirm everything works
+// export const runtime = "edge"; 
