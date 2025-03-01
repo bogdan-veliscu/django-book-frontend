@@ -23,6 +23,12 @@ const nextConfig = {
     console.log("Next.js API URL for rewrites:", apiUrl);
 
     return [
+      // Don't rewrite auth endpoints - they should be handled by Next.js
+      {
+        source: "/api/auth/:path*",
+        destination: "/api/auth/:path*",
+      },
+      // Rewrite all other API requests to the backend
       {
         source: "/api/:path*",
         destination: `${apiUrl}/:path*`,
@@ -42,7 +48,7 @@ const nextConfig = {
       "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; connect-src 'self' http://localhost:* http://127.0.0.1:* http://app:8000 ws: wss:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: http:; font-src 'self' data:; frame-ancestors 'none'; form-action 'self';";
 
     const prodCSP =
-      "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://brandfocus.ai wss://brandfocus.ai https://api.dicebear.com http://localhost:* http://127.0.0.1:* https://brandfocus.ai/api; font-src 'self' data:; img-src 'self' data: https://api.dicebear.com https://brandfocus.ai; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'; form-action 'self';";
+      "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://brandfocus.ai wss://brandfocus.ai https://api.dicebear.com http://localhost:* http://127.0.0.1:* https://brandfocus.ai/api https://brandfocus.ai/api/auth/*; font-src 'self' data:; img-src 'self' data: https://api.dicebear.com https://brandfocus.ai; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'; form-action 'self';";
 
     return [
       {

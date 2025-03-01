@@ -1,10 +1,14 @@
-import { NextResponse } from 'next/server'
+import { auth } from '../auth'
 
-export function middleware() {
-  return NextResponse.next()
-}
+// Export the auth middleware directly
+export default auth
 
-// Temporary disable auth during build
+// Configure which paths should be protected by the middleware
 export const config = {
-  matcher: '/((?!api|static|.*\\..*|_next).*)',
+  matcher: [
+    // Match all API routes except auth and health endpoints
+    '/api/((?!auth|health).*)',
+    // Match all pages except public ones
+    '/((?!api|_next/static|_next/image|favicon.ico|health|login|register).*)',
+  ],
 } 
