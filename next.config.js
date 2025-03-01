@@ -2,7 +2,7 @@
 const nextConfig = {
   output: "standalone",
   images: {
-    domains: ["api.dicebear.com", "brandfocus.ai", "localhost"],
+    domains: ["api.dicebear.com", "brandfocus.ai"],
   },
   trailingSlash: true,
   eslint: {
@@ -17,11 +17,9 @@ const nextConfig = {
     level: "error",
   },
   async rewrites() {
-    // Using a regular environment variable here, not NEXT_PUBLIC since this runs server-side
-    const apiUrl =
-      process.env.API_URL ||
-      process.env.NEXT_PUBLIC_API_URL ||
-      "http://app:8000/api";
+    // Use environment variables for API URL
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://app:8000/api";
+
     return [
       {
         source: "/api/:path*",
@@ -42,13 +40,13 @@ const nextConfig = {
       "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; connect-src 'self' http://localhost:8000 http://localhost:3000 http://app:8000 ws: wss:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: http:; font-src 'self' data:; frame-ancestors 'none'; form-action 'self';";
 
     const prodCSP =
-      "default-src 'self'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://brandfocus.ai https://www.brandfocus.ai wss://brandfocus.ai wss://www.brandfocus.ai; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://api.dicebear.com https://brandfocus.ai; font-src 'self' data:; frame-ancestors 'none'; form-action 'self';";
+      "default-src 'self'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://brandfocus.ai wss://brandfocus.ai https://api.dicebear.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://api.dicebear.com https://brandfocus.ai; font-src 'self' data:; frame-ancestors 'none'; form-action 'self';";
 
     return [
       {
         source: "/:path*",
         headers: [
-          // Fix CORS conflict - can't use wildcard with credentials
+          // CORS headers - handle properly without wildcards (which can't be used with credentials)
           {
             key: "Access-Control-Allow-Origin",
             value: isDev ? "http://localhost:3000" : "https://brandfocus.ai",
@@ -66,7 +64,7 @@ const nextConfig = {
             value:
               "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization",
           },
-          // Environment-appropriate CSP
+          // Security headers with environment-appropriate CSP
           {
             key: "Content-Security-Policy",
             value: isDev ? devCSP : prodCSP,
