@@ -6,24 +6,22 @@ const isBuildTime = process.env.NODE_ENV === 'production' && typeof window === '
 
 // Determine the API URL based on environment
 const getApiUrl = () => {
-  // Browser environment
+  // Environment variable should take precedence
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    console.log("Using API URL from environment variable:", process.env.NEXT_PUBLIC_API_URL);
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+  
+  // Browser environment - use the current origin with /api path
   if (typeof window !== 'undefined') {
-    return window.location.origin.includes('localhost') 
-      ? 'http://localhost:8000/api'
-      : `${window.location.origin}/api`;
+    const origin = window.location.origin;
+    console.log("Using browser origin for API URL:", `${origin}/api`);
+    return `${origin}/api`;
   } 
-  // Server environment
+  // Server environment - fallback
   else {
-    // In server environment, we need a full URL
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api';
-    
-    // Make sure it's a full URL
-    if (apiUrl.startsWith('http')) {
-      return apiUrl;
-    } else {
-      // If it's a relative URL, prepend with a default host
-      return `http://localhost:3000${apiUrl.startsWith('/') ? apiUrl : `/${apiUrl}`}`;
-    }
+    console.log("Falling back to default API URL: /api");
+    return '/api';
   }
 };
 

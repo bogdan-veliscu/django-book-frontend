@@ -5,7 +5,7 @@ import type { NextAuthConfig } from "next-auth"
 import CredentialsProvider from 'next-auth/providers/credentials';
 import axios from "axios"
 import useProfileStore from "./store/profileStore";
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
 const config = {
   theme: { logo: "/logo.png" },

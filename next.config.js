@@ -20,6 +20,8 @@ const nextConfig = {
     // Use environment variables for API URL
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://app:8000/api";
 
+    console.log("Next.js API URL for rewrites:", apiUrl);
+
     return [
       {
         source: "/api/:path*",
@@ -37,10 +39,10 @@ const nextConfig = {
 
     // Define different CSP policies for dev and production
     const devCSP =
-      "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; connect-src 'self' http://localhost:8000 http://localhost:3000 http://app:8000 ws: wss:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: http:; font-src 'self' data:; frame-ancestors 'none'; form-action 'self';";
+      "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; connect-src 'self' http://localhost:* http://127.0.0.1:* http://app:8000 ws: wss:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: http:; font-src 'self' data:; frame-ancestors 'none'; form-action 'self';";
 
     const prodCSP =
-      "default-src 'self'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://brandfocus.ai wss://brandfocus.ai https://api.dicebear.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://api.dicebear.com https://brandfocus.ai; font-src 'self' data:; frame-ancestors 'none'; form-action 'self';";
+      "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://brandfocus.ai wss://brandfocus.ai https://api.dicebear.com http://localhost:* http://127.0.0.1:* https://brandfocus.ai/api; font-src 'self' data:; img-src 'self' data: https://api.dicebear.com https://brandfocus.ai; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'; form-action 'self';";
 
     return [
       {
