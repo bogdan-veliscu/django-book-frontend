@@ -2,23 +2,26 @@
 const nextConfig = {
   output: "standalone",
   images: {
-    unoptimized: true,
-    domains: ["api.dicebear.com", "brandfocus.ai", "localhost", ""],
+    domains: ["api.dicebear.com", "brandfocus.ai", "localhost"],
   },
   trailingSlash: true,
   eslint: {
+    // Consider removing this in the future to catch issues
     ignoreDuringBuilds: true,
   },
   typescript: {
+    // Consider removing this in the future to catch issues
     ignoreBuildErrors: process.env.NODE_ENV === "production",
   },
   logging: {
     level: "error",
-    quiet: true,
   },
   async rewrites() {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://app:8000/api";
-    console.log("API URL configured as:", apiUrl);
+    // Using a regular environment variable here, not NEXT_PUBLIC since this runs server-side
+    const apiUrl =
+      process.env.API_URL ||
+      process.env.NEXT_PUBLIC_API_URL ||
+      "http://app:8000/api";
     return [
       {
         source: "/api/:path*",
@@ -32,13 +35,23 @@ const nextConfig = {
     },
   },
   async headers() {
+    const isDev = process.env.NODE_ENV !== "production";
+
+    // Define different CSP policies for dev and production
+    const devCSP =
+      "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; connect-src 'self' http://localhost:8000 http://localhost:3000 http://app:8000 ws: wss:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: http:; font-src 'self' data:; frame-ancestors 'none'; form-action 'self';";
+
+    const prodCSP =
+      "default-src 'self'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://brandfocus.ai https://www.brandfocus.ai wss://brandfocus.ai wss://www.brandfocus.ai; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://api.dicebear.com https://brandfocus.ai; font-src 'self' data:; frame-ancestors 'none'; form-action 'self';";
+
     return [
       {
         source: "/:path*",
         headers: [
+          // Fix CORS conflict - can't use wildcard with credentials
           {
             key: "Access-Control-Allow-Origin",
-            value: "*",
+            value: isDev ? "http://localhost:3000" : "https://brandfocus.ai",
           },
           {
             key: "Access-Control-Allow-Credentials",
@@ -53,10 +66,10 @@ const nextConfig = {
             value:
               "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization",
           },
+          // Environment-appropriate CSP
           {
             key: "Content-Security-Policy",
-            value:
-              "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; connect-src 'self' http://localhost:8000 http://localhost:3000 http://app:8000 https://brandfocus.ai ws: wss:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: http:; font-src 'self' data:; frame-ancestors 'none'; form-action 'self';",
+            value: isDev ? devCSP : prodCSP,
           },
           {
             key: "X-Content-Type-Options",
