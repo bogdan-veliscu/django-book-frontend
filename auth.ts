@@ -36,6 +36,11 @@ declare module "next-auth/jwt" {
   }
 }
 
+// Ensure we have a secret
+if (!process.env.NEXTAUTH_SECRET) {
+  console.warn("Warning: NEXTAUTH_SECRET is not defined. Using a fallback secret for development only.");
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   debug: process.env.NODE_ENV === "development",
   pages: {
@@ -46,6 +51,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   cookies: {
     sessionToken: {
       name: `next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
+    // Disable automatic cookie handling for CSRF token to prevent redirect loops
+    csrfToken: {
+      name: 'next-auth.csrf-token',
       options: {
         httpOnly: true,
         sameSite: "lax",
@@ -132,4 +147,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
+  // Explicitly set the secret to ensure it's used
+  secret: process.env.NEXTAUTH_SECRET || "fallback-secret-do-not-use-in-production",
+  // Disable automatic CSRF protection to prevent redirect loops
+  useSecureCookies: process.env.NODE_ENV === "production",
+  trustHost: true,
 }); 

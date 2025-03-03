@@ -4,7 +4,7 @@ const nextConfig = {
   images: {
     domains: ["api.dicebear.com", "brandfocus.ai"],
   },
-  trailingSlash: true,
+  trailingSlash: false,
   eslint: {
     // Consider removing this in the future to catch issues
     ignoreDuringBuilds: true,
