@@ -42,7 +42,7 @@ if (!process.env.NEXTAUTH_SECRET) {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  debug: process.env.NODE_ENV === "development",
+  debug: process.env.NODE_ENV === "development" || process.env.NEXTAUTH_DEBUG === "true",
   pages: {
     signIn: "/login",
     signOut: "/",
@@ -70,7 +70,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
       // Initial sign in
       if (user) {
         console.log("JWT callback with user:", user);
@@ -94,7 +94,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         // Update session with token data
         session.user = {
           ...session.user,
-          email: token.email || "",
+          email: token.email as string || "",
           token: token.token as string || "",
           username: token.username as string || "",
           bio: token.bio as string || "",
@@ -102,7 +102,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         };
         
         // Also set accessToken for easier access
-        session.accessToken = token.token as string;
+        session.accessToken = token.token as string || "";
       }
       return session;
     },
@@ -133,6 +133,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             email: credentials.email as string,
             password: credentials.password as string,
           });
+
+          if (!user) {
+            console.error("No user returned from loginUser");
+            return null;
+          }
 
           console.log("User authorized:", user);
           return user;
