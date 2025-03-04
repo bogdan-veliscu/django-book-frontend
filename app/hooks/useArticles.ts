@@ -1,4 +1,3 @@
-
 import {useState, useEffect } from 'react';
 import { fetchArticles } from '@/services/articleService';
 import useArticleStore from '@/store/articleStore';
@@ -13,8 +12,12 @@ export const useArticles = () => {
       try {
         const data = await fetchArticles();
         setArticles(data);
-      } catch (err) {
-        setError('Failed to fetch articles');
+        setError(null);
+      } catch (err: any) {
+        console.error('Error in useArticles hook:', err);
+        setError(err?.message || 'Error fetching articles');
+        // Set empty array to prevent undefined errors in the UI
+        setArticles([]);
       } finally {
         setLoading(false);
       }

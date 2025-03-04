@@ -1,0 +1,23 @@
+services:
+  frontend:
+    build:
+      context: .
+      args:
+        - NEXT_PUBLIC_API_URL=https://api.brandfocus.ai/api
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=https://api.brandfocus.ai/api
+      - NEXTAUTH_URL=https://brandfocus.ai
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+    restart: unless-stopped
+    # Add network configuration to improve stability
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

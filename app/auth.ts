@@ -5,7 +5,7 @@ import type { NextAuthConfig } from "next-auth"
 import CredentialsProvider from 'next-auth/providers/credentials';
 import axios from "axios"
 import useProfileStore from "./store/profileStore";
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
 const config = {
   theme: { logo: "/logo.png" },
@@ -43,15 +43,21 @@ const config = {
   session: { strategy: "jwt" },
   callbacks: {
     jwt({ token, trigger, session, user }) {
-      if (user) token.accessToken = user.accessToken
-      if (trigger === "update") token.name = session.user.name
-      return token
+      if (user) {
+        token.accessToken = (user as any).accessToken;
+      }
+      if (trigger === "update") token.name = session.user.name;
+      return token;
     },
-    async session({ session, token }) {
-      return {...session, accessToken: token.accessToken}
-    },
+    session({ session, token }) {
+      if (token?.accessToken) {
+        session.accessToken = token.accessToken as string;
+      }
+      return session;
+    }
   },
   debug: process.env.NODE_ENV !== "production" ? true : false,
+  trustHost: true,
 } satisfies NextAuthConfig
 
 export const { handlers, auth, signIn, signOut } = NextAuth(config)

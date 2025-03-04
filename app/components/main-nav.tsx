@@ -40,7 +40,6 @@ export function MainNav() {
                             Conduit
                         </NavigationMenuLink>
 
-
                     </NavigationMenuItem>
                     <NavigationMenuItem>
                         <NavigationMenuLink
